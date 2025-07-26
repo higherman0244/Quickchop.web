@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickChop Web App</title>
+    <style>
+        :root {
+            --deep-purple: #2E0249;
+            --gold: #FFD700;
+            --hot-pink: #FF69B4;
+            --light-pink: #FFB6C1;
+            --hybrid: #FFB347;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--deep-purple);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: var(--gold);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .nav-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .nav-btn {
+            background-color: var(--hot-pink);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background-color: var(--light-pink);
+        }
+        
+        .pane {
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border-radius: 10px;
+            padding: 20px;
+            flex: 1;
+            display: none;
+        }
+        
+        .pane.active {
+            display: block;
+        }
+        
+        .wallet-info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .balance {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--gold);
+            margin: 10px 0;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        
+        button {
+            background-color: var(--gold);
+            color: black;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #e6c200;
+        }
+        
+        .quiz-container {
+            text-align: center;
+        }
+        
+        .timer {
+            font-size: 1.5rem;
+            color: red;
+            margin: 10px 0;
+        }
+        
+        .question {
+            font-size: 1.2rem;
+            margin: 20px 0;
+        }
+        
+        .option-btn {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 15px;
+            background-color: var(--light-pink);
+            color: black;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: left;
+            transition: background-color 0.3s;
+        }
+        
+        .option-btn:hover {
+            background-color: var(--hot-pink);
+            color: white;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 20px;
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+        
+        .download-link {
+            color: var(--gold);
+            font-weight: bold;
+            text-decoration: none;
+        }
+        
+        .download-link:hover {
+            text-decoration: underline;
+        }
+        
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        canvas {
+            background-color: white;
+            border-radius: 5px;
+        }
+        
+        .code-container textarea {
+            width: 100%;
+            height: 200px;
+            background-color: #1E1E1E;
+            color: white;
+            font-family: monospace;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>QUICKCHOP</h1>
+            <p>Test your knowledge and win rewards!</p>
+        </header>
+        
+        <div class="nav-bar">
+            <button class="nav-btn" data-pane="quiz">Quizzes</button>
+            <button class="nav-btn" data-pane="animal_quiz">Animal Quiz</button>
+            <button class="nav-btn" data-pane="wallet">Wallet</button>
+            <button class="nav-btn" data-pane="optical">Optical Test</button>
+            <button class="nav-btn" data-pane="exchange">Currency Exchange</button>
+            <button class="nav-btn" data-pane="ecobank">Ecobank</button>
+            <button class="nav-btn" data-pane="logout">Logout</button>
+        </div>
+        
+        <!-- Quiz Pane -->
+        <div id="quiz-pane" class="pane">
+            <h2>Soccer Quiz Challenge</h2>
+            <div class="quiz-rules">
+                <h3>Rules:</h3>
+                <ul>
+                    <li>Choose entry fee ($1-$5000)</li>
+                    <li>3 seconds to answer each question</li>
+                    <li>Reward reduces by 30% each question</li>
+                    <li>Complete all 5 questions to win!</li>
+                </ul>
+            </div>
+            
+            <div class="form-group">
+                <label for="entry-fee">Entry Fee:</label>
+                <select id="entry-fee">
+                    <option value="1.00">$1.00</option>
+                    <option value="5.00">$5.00</option>
+                    <option value="10.00">$10.00</option>
+                    <option value="50.00">$50.00</option>
+                    <option value="100.00">$100.00</option>
+                </select>
+            </div>
+            
+            <button id="start-quiz">Start Quiz</button>
+            
+            <div id="quiz-content" style="display:none;">
+                <div class="timer">Time: 3s</div>
+                <div class="question" id="question-text"></div>
+                <div id="options-container"></div>
+                <div class="progress">
+                    <span>Progress: </span><span id="progress">0/5</span>
+                    <span>Current Reward: </span><span id="reward">$0.00</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Wallet Pane -->
+        <div id="wallet-pane" class="pane">
+            <h2>Wallet Management</h2>
+            <div class="wallet-info">
+                <div>Your Balance:</div>
+                <div class="balance">$0.00</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="deposit-amount">Deposit Amount ($1-$100):</label>
+                <input type="number" id="deposit-amount" min="1" max="100" value="10">
+                <button id="deposit-btn">Deposit</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="withdraw-amount">Withdraw Amount:</label>
+                <input type="number" id="withdraw-amount" min="0.01" step="0.01" value="5">
+                <button id="withdraw-btn">Withdraw</button>
+            </div>
+        </div>
+        
+        <!-- Optical Test Pane -->
+        <div id="optical-pane" class="pane">
+            <h2>Optical Illusion Test</h2>
+            <div class="canvas-container">
+                <canvas id="optical-canvas" width="400" height="400"></canvas>
+            </div>
+            <p>What do you see rotating?</p>
+            <div>
+                <input type="radio" id="inner" name="rotation" value="inner">
+                <label for="inner">Inner circle</label><br>
+                <input type="radio" id="outer" name="rotation" value="outer">
+                <label for="outer">Outer circle</label><br>
+                <input type="radio" id="both" name="rotation" value="both">
+                <label for="both">Both circles</label><br>
+                <input type="radio" id="nothing" name="rotation" value="nothing">
+                <label for="nothing">Nothing is rotating</label>
+            </div>
+            <button id="submit-optical">Submit Answer</button>
+        </div>
+        
+        <!-- Currency Exchange Pane -->
+        <div id="exchange-pane" class="pane">
+            <h2>Currency Exchange</h2>
+            <div class="form-group">
+                <label for="currency">Your Currency:</label>
+                <select id="currency">
+                    <option value="NGN">NGN</option>
+                    <option value="GHS">GHS</option>
+                    <option value="KES">KES</option>
+                    <option value="UGX">UGX</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="amount">Amount to Convert:</label>
+                <input type="number" id="amount" min="0" step="0.01" value="1000">
+            </div>
+            
+            <div class="form-group">
+                <label for="converted">USD Equivalent:</label>
+                <input type="text" id="converted" value="$0.27" readonly>
+            </div>
+            
+            <div>
+                <button id="convert-btn">Convert</button>
+                <button id="deposit-converted">Deposit USD</button>
+            </div>
+        </div>
+        
+        <!-- AI Assistant Pane -->
+        <div id="assistant-pane" class="pane">
+            <h2>AI Assistant</h2>
+            <p>Enter Python code to analyze and improve</p>
+            <div class="code-container">
+                <textarea id="code-input" placeholder="Enter your Python code here..."></textarea>
+            </div>
+            <button id="analyze-btn">Analyze & Improve</button>
+            <div class="code-container">
+                <textarea id="code-output" placeholder="Results will appear here..." readonly></textarea>
+            </div>
+        </div>
+        
+        <!-- Ecobank Pane -->
+        <div id="ecobank-pane" class="pane">
+            <h2>Ecobank Sandbox Banking</h2>
+            <p id="ecobank-status" style="color: red;">Status: Disconnected</p>
+            <div>
+                <h3>Sandbox Credentials</h3>
+                <p>User ID: iamaunifieddev103</p>
+                <p>Password: $2a$10$Wmame.Lh1FJDCB4JJIxtx.3SZT0dP2XlQWgj9Q5UAGcDLpB0yRYCC</p>
+                <p>Lab Key: 0C/5F7QHdMv40uVGaTbt5nXdJOxi105k2LN9goPRqTUrwZrdYOYbvC0sJz7G0iT9</p>
+            </div>
+            <button id="connect-ecobank">Connect to Ecobank</button>
+            
+            <div id="banking-frame" style="display: none;">
+                <h3>Banking Operations</h3>
+                <div>
+                    <p>Ecobank Balance: <span id="ecobank-balance">$1000.00</span></p>
+                    <p>Quickchop Balance: <span id="quickchop-balance">$0.00</span></p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="deposit-ecobank">Deposit to Quickchop:</label>
+                    <input type="number" id="deposit-ecobank" min="0" step="0.01">
+                    <button id="transfer-to-quickchop">Transfer</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="withdraw-ecobank">Withdraw to Ecobank:</label>
+                    <input type="number" id="withdraw-ecobank" min="0" step="0.01">
+                    <button id="transfer-to-ecobank">Transfer</button>
+                </div>
+            </div>
+            
+            <button id="doc-btn">View API Documentation</button>
+        </div>
+        
+        <footer>
+            <p>Download the full desktop application: 
+                <a href="quickchop.exe" class="download-link">QuickChop for Windows</a>
+            </p>
+            <p>Developed with Qt and C++</p>
+        </footer>
+    </div>
+
+    <script>
+        // Canvas for optical illusion
+        const canvas = document.getElementById('optical-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Draw rotating snakes illusion
+        function drawIllusion() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00'];
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 150;
+            
+            for (let i = 0; i < 12; i++) {
+                const startAngle = i * Math.PI / 6;
+                const endAngle = startAngle + Math.PI / 12;
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                
+                ctx.fillStyle = colors[i % 4];
+                ctx.fill();
+            }
+        }
+        
+        // Initialize
+        drawIllusion();
+        
+        // Pane switching
+        document.querySelectorAll('.nav-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const paneName = button.getAttribute('data-pane');
+                if (paneName === 'logout') {
+                    window.location.reload();
+                    return;
+                }
+                
+                // Hide all panes
+                document.querySelectorAll('.pane').forEach(pane => {
+                    pane.classList.remove('active');
+                });
+                
+                // Show selected pane
+                document.getElementById(`${paneName}-pane`).classList.add('active');
+            });
+        });
+        
+        // Initialize with wallet pane active
+        document.getElementById('wallet-pane').classList.add('active');
+        
+        // Quiz functionality
+        document.getElementById('start-quiz').addEventListener('click', () => {
+            document.getElementById('quiz-content').style.display = 'block';
+            document.getElementById('question-text').textContent = 
+                "If Lionel Messi scored 45 goals in 2018 and Cristiano Ronaldo scored 50 goals in 2019, what's the combined total goals scored?";
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            const options = ["95", "85", "105", "90"];
+            options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option;
+                btn.addEventListener('click', () => {
+                    alert(`You selected: ${option}`);
+                    // Logic for next question would go here
+                });
+                optionsContainer.appendChild(btn);
+            });
+        });
+        
+        // Wallet functionality
+        document.getElementById('deposit-btn').addEventListener('click', () => {
+            const amount = parseFloat(document.getElementById('deposit-amount').value);
+            if (amount >= 1 && amount <= 100) {
+                const balance = parseFloat(document.querySelector('.balance').textContent.slice(1)) + amount;
+                document.querySelector('.balance').textContent = `$${balance.toFixed(2)}`;
+                alert(`Successfully deposited $${amount.toFixed(2)}`);
+            } else {
+                alert('Please enter an amount between $1 and $100');
+            }
+        });
+        
+        document.getElementById('withdraw-btn').addEventListener('click', () => {
+            const amount = parseFloat(document.getElementById('withdraw-amount').value);
+            const balance = parseFloat(document.querySelector('.balance').textContent.slice(1));
+            if (amount > balance) {
+                alert('Insufficient funds');
+            } else {
+                document.querySelector('.balance').textContent = `$${(balance - amount).toFixed(2)}`;
+                alert(`Successfully withdrew $${amount.toFixed(2)}`);
+            }
+        });
+        
+        // Optical test
+        document.getElementById('submit-optical').addEventListener('click', () => {
+            const selected = document.querySelector('input[name="rotation"]:checked');
+            if (!selected) {
+                alert('Please select an answer');
+                return;
+            }
+            
+            if (selected.value === 'nothing') {
+                const reward = (Math.random() * 4.5 + 0.5).toFixed(2);
+                alert(`Correct! You earned $${reward}`);
+            } else {
+                alert('Interesting! The rotation is actually an illusion. Try looking at one point to see it\'s stationary.');
+            }
+        });
+        
+        // Currency exchange
+        document.getElementById('convert-btn').addEventListener('click', () => {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const converted = (amount * 0.00027).toFixed(2);
+            document.getElementById('converted').value = `$${converted}`;
+        });
+        
+        document.getElementById('deposit-converted').addEventListener('click', () => {
+            const amount = parseFloat(document.getElementById('converted').value.slice(1));
+            if (amount > 0) {
+                const balance = parseFloat(document.querySelector('.balance').textContent.slice(1)) + amount;
+                document.querySelector('.balance').textContent = `$${balance.toFixed(2)}`;
+                alert(`Successfully deposited $${amount.toFixed(2)}`);
+            } else {
+                alert('Please convert an amount first');
+            }
+        });
+        
+        // Ecobank connection
+        document.getElementById('connect-ecobank').addEventListener('click', () => {
+            document.getElementById('ecobank-status').textContent = 'Status: Connected';
+            document.getElementById('ecobank-status').style.color = 'green';
+            document.getElementById('banking-frame').style.display = 'block';
+            alert('Successfully connected to Ecobank sandbox!');
+        });
+        
+        // Transfer to Quickchop
+        document.getElementById('transfer-to-quickchop').addEventListener('click', () => {
+            const amount = parseFloat(document.getElementById('deposit-ecobank').value);
+            if (amount > 0) {
+                const ecobankBalance = 1000 - amount;
+                const quickchopBalance = parseFloat(document.querySelector('.balance').textContent.slice(1)) + amount;
+                document.getElementById('ecobank-balance').textContent = `$${ecobankBalance.toFixed(2)}`;
+                document.querySelector('.balance').textContent = `$${quickchopBalance.toFixed(2)}`;
+                document.getElementById('quickchop-balance').textContent = `$${quickchopBalance.toFixed(2)}`;
+                alert(`Successfully transferred $${amount.toFixed(2)} to your Quickchop wallet!`);
+            } else {
+                alert('Please enter a valid amount');
+            }
+        });
+        
+        // Transfer to Ecobank
+        document.getElementById('transfer-to-ecobank').addEventListener('click', () => {
+            const amount = parseFloat(document.getElementById('withdraw-ecobank').value);
+            const quickchopBalance = parseFloat(document.querySelector('.balance').textContent.slice(1));
+            if (amount > quickchopBalance) {
+                alert('Insufficient funds');
+            } else {
+                const ecobankBalance = 1000 + amount;
+                const newBalance = quickchopBalance - amount;
+                document.getElementById('ecobank-balance').textContent = `$${ecobankBalance.toFixed(2)}`;
+                document.querySelector('.balance').textContent = `$${newBalance.toFixed(2)}`;
+                document.getElementById('quickchop-balance').textContent = `$${newBalance.toFixed(2)}`;
+                alert(`Successfully transferred $${amount.toFixed(2)} to your Ecobank account!`);
+            }
+        });
+        
+        // Documentation
+        document.getElementById('doc-btn').addEventListener('click', () => {
+            window.open('https://developer.ecobank.com', '_blank');
+        });
+        
+        // AI Assistant
+        document.getElementById('analyze-btn').addEventListener('click', () => {
+            const code = document.getElementById('code-input').value;
+            if (!code.trim()) {
+                alert('Please enter some Python code to analyze');
+                return;
+            }
+            
+            // Simple analysis (in a real app, this would be more sophisticated)
+            let suggestions = [];
+            
+            if (!code.includes('import') && !code.includes('def') && !code.includes('class')) {
+                suggestions.push('⚠️ No imports or function/class definitions found');
+            }
+            
+            if (code.includes('for i in range(len(')) {
+                suggestions.push('🔄 Consider using enumerate() instead of range(len()) for iteration');
+            }
+            
+            if (code.includes(' == True') || code.includes(' == False')) {
+                suggestions.push('💡 Simplify boolean comparisons by removing \'== True/False\'');
+            }
+            
+            if (code.includes('def ') && !code.includes('->') && suggestions.length === 0) {
+                suggestions.push('📝 Consider adding type hints to function definitions');
+            }
+            
+            if (code.includes('eval(') || code.includes('exec(')) {
+                suggestions.push('🔒 Avoid using eval() or exec() with untrusted input - security risk!');
+            }
+            
+            if (suggestions.length === 0) {
+                suggestions.push('✅ Code looks good! No major issues found');
+            }
+            
+            let output = 'Code Analysis Results:\n';
+            suggestions.forEach(s => output += `• ${s}\n`);
+            output += '\nImproved Code:\n';
+            output += code.replace(/for i in range\(len\(/g, 'for i, item in enumerate(')
+                          .replace(/ == True/g, '')
+                          .replace(/ == False/g, ' not');
+            
+            document.getElementById('code-output').value = output;
+        });
+    </script>
+</body>
+  </html>
